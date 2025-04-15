@@ -4,7 +4,6 @@
 //
 //  Created by Seah Park on 4/14/25.
 //
-// TODO: 러프하게 만들기 -> 리팩토링
 
 
 import SwiftUI
@@ -17,63 +16,100 @@ import SwiftUI
 
 struct ContentView: View {
 //    @State private var item = items.allCases.randomElement()?.rawValue
-    @State private var gameItem = ["Rock", "Paper", "Sicissors"].shuffled()
+    let gameItem = ["Rock", "Paper", "Sicissors"]
     @State private var index = Int.random(in: 0...2)
-    @State private var winFlip = false
-    @State private var showAlert: Bool = false
-    @State private var content = ""
+    @State private var brainTask = Bool.random()
     @State private var score = 0
-    @State private var statusItem = ["win", "lose"].shuffled()
-    @State private var statusIndex = Int.random(in: 0...1)
     @State private var gameCount = 0
+    @State private var content = ""
+    @State private var showAlert: Bool = false
     
-    var body: some View {
-        VStack {
-            Spacer()
-            
-            //            Text("✌️✊✋").font(.largeTitle)
-            Text("Here is \(gameItem[index])")
-            Text("Tell me how to \(statusItem[statusIndex])")
-            
-            Spacer()
-            
-            VStack {
-                Text("I can \(statusItem[statusIndex]) if I play...")
-                Button("Rock") {
-                    winner(answer: "Rock")
-                }
-                Button("Paper") {
-                    winner(answer: "Paper")
-                }
-                Button("Sicissors") {
-                    winner(answer: "Sicissors")
-                }
-            }
-            Text("Score: \(score), game count: \(gameCount) / 10")
-            
-            Spacer()
-        }.alert(content, isPresented: $showAlert) {
-            Button("OK") {
-                if gameCount == 10 {
-                    playNew()
-                } else {
-                    playContinue()
-                }
-            }
-        } message: {
-            if gameCount == 10 {
-                Text("\(content), That was last game! Let's play again.")
-            } else {
-                Text(content)
-            }
-        }
-        
+    // computed property
+    var brainTaskText: String {
+        brainTask ? "win" : "lose"
     }
     
-    func winner(answer: String) {
-        var question = gameItem[index]
+    var body: some View {
+        ZStack {
+            Color.clear.background(.green.gradient.opacity(0.8)).ignoresSafeArea()
+            
+            VStack {
+                Spacer()
+                //            Text("✌️✊✋").font(.system(size: 200))
+                
+                VStack {
+                    HStack {
+                        Text("Here is")
+                        Text(gameItem[index])
+                            .foregroundColor(.red).fontWeight(.bold)
+                    }
+                    HStack {
+                        Text("Tell me how to")
+                        Text(brainTaskText)
+                            .foregroundColor(.red).fontWeight(.bold)
+                    }
+                }.font(.title)
+                
+                Spacer()
+                
+                VStack {
+                    HStack {
+                        Text("I can")
+                        Text(brainTaskText).foregroundColor(.red).fontWeight(.bold)
+                        Text("if I play...")
+                        
+                        Spacer()
+                    }.font(.title2)
+                    
+                    VStack {
+                        ForEach(gameItem, id: \.self){ answer in
+                            Button(answer) { winner(answer) }
+                                .padding(.vertical, 4)
+                        }
+                    }
+                    .font(.title2)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.regularMaterial)
+                    .cornerRadius(20)
+                }
+                
+                Spacer()
+                
+                HStack {
+                    Text("Score: \(score)")
+                    Spacer()
+                    Text("Game Count: \(gameCount) / 10")
+                }
+                .font(.title3.bold())
+                
+                Spacer()
+            }.alert(content, isPresented: $showAlert) {
+                Button("OK") {
+                    if gameCount == 10 {
+                        playNew()
+                    } else {
+                        playContinue()
+                    }
+                }
+            } message: {
+                if gameCount == 10 {
+                    Text("\(content), That was last game! Let's play again.")
+                } else {
+                    Text(content)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    func winner(_ answer: String) {
+        let question = gameItem[index]
         
-        if statusItem[statusIndex] == "win" {
+//        if your moves array was ["Rock", "Paper", "Scissors"] your array of winning moves would be ["Paper", "Scissors", "Rock"].
+
+        
+        if brainTaskText == "win" {
             if question == "Rock" && answer == "Paper" {
                 win()
             } else if question == "Paper" && answer == "Sicissors" {
@@ -83,7 +119,7 @@ struct ContentView: View {
             } else {
                 lose()
             }
-        } else if statusItem[statusIndex] == "lose" {
+        } else if brainTaskText == "lose" {
             if question == "Rock" && answer == "Sicissors" {
                 win()
             } else if question == "Paper" && answer == "Rock" {
@@ -113,9 +149,7 @@ struct ContentView: View {
     
     func playContinue() {
         index = Int.random(in: 0...2)
-        gameItem.shuffle()
-        statusIndex = Int.random(in: 0...1)
-        statusItem.shuffle()
+        brainTask.toggle()
     }
     
     func playNew() {
