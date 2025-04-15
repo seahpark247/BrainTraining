@@ -25,6 +25,7 @@ struct ContentView: View {
     @State private var score = 0
     @State private var statusItem = ["win", "lose"].shuffled()
     @State private var statusIndex = Int.random(in: 0...1)
+    @State private var gameCount = 0
     
     var body: some View {
         VStack {
@@ -48,15 +49,23 @@ struct ContentView: View {
                     winner(answer: "Sicissors")
                 }
             }
-            Text("Score: \(score)")
+            Text("Score: \(score), game count: \(gameCount) / 10")
             
             Spacer()
         }.alert(content, isPresented: $showAlert) {
             Button("OK") {
-                playContinue()
+                if gameCount == 10 {
+                    playNew()
+                } else {
+                    playContinue()
+                }
             }
         } message: {
-            Text(content)
+            if gameCount == 10 {
+                Text("\(content), That was last game! Let's play again.")
+            } else {
+                Text(content)
+            }
         }
         
     }
@@ -86,6 +95,7 @@ struct ContentView: View {
             }
         }
                 
+        gameCount += 1
         showAlert = true
     }
     
@@ -106,6 +116,12 @@ struct ContentView: View {
         gameItem.shuffle()
         statusIndex = Int.random(in: 0...1)
         statusItem.shuffle()
+    }
+    
+    func playNew() {
+        playContinue()
+        score = 0
+        gameCount = 0
     }
 }
 
