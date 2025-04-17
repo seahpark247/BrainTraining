@@ -4,7 +4,7 @@
 //
 //  Created by Seah Park on 4/14/25.
 //
-// TODO: 코드 리팩토링 더 하기, 모듈화, 클래스, 이넘
+// TODO: Add enum, refatoring winner function
 
 
 import SwiftUI
@@ -14,6 +14,51 @@ import SwiftUI
 //    case paper = "paper"
 //    case scissors = "scissors"
 //}
+
+struct BackgroundColor: View {
+    var body: some View {
+        Color.clear.background(.green.gradient.opacity(0.8)).ignoresSafeArea()
+    }
+}
+
+struct promptText: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(.red).fontWeight(.bold)
+    }
+}
+
+struct answerChoices: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.title2)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(.regularMaterial)
+            .cornerRadius(20)
+    }
+}
+
+struct statusText: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.title3.bold())
+    }
+}
+
+extension View {
+    func promptStyle() -> some View {
+        modifier(promptText())
+    }
+    
+    func answerStyle() -> some View {
+        modifier(answerChoices())
+    }
+    
+    func statusStyle() -> some View {
+        modifier(statusText())
+    }
+}
 
 struct ContentView: View {
 //    @State private var item = items.allCases.randomElement()?.rawValue
@@ -25,6 +70,18 @@ struct ContentView: View {
     @State private var content = ""
     @State private var showAlert: Bool = false
     
+    // closure
+    var symbol: String {
+        switch index {
+        case 0:
+            return "✊"
+        case 1:
+            return "✋"
+        default:
+            return "✌️"
+        }
+    }
+    
     // computed property
     var brainTaskText: String {
         brainTask ? "win" : "lose"
@@ -32,22 +89,19 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            Color.clear.background(.green.gradient.opacity(0.8)).ignoresSafeArea()
+            BackgroundColor()
             
             VStack {
                 Spacer()
-                //            Text("✌️✊✋").font(.system(size: 200))
                 
                 VStack {
                     HStack {
-                        Text("Here is")
-                        Text(gameItem[index])
-                            .foregroundColor(.red).fontWeight(.bold)
+                        Text("They play")
+                        Text(symbol).font(.system(size: 200))
                     }
                     HStack {
                         Text("Tell me how to")
-                        Text(brainTaskText)
-                            .foregroundColor(.red).fontWeight(.bold)
+                        Text(brainTaskText).promptStyle()
                     }
                 }.font(.title)
                 
@@ -56,7 +110,7 @@ struct ContentView: View {
                 VStack {
                     HStack {
                         Text("I can")
-                        Text(brainTaskText).foregroundColor(.red).fontWeight(.bold)
+                        Text(brainTaskText).promptStyle()
                         Text("if I play...")
                         
                         Spacer()
@@ -68,11 +122,8 @@ struct ContentView: View {
                                 .padding(.vertical, 4)
                         }
                     }
-                    .font(.title2)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.regularMaterial)
-                    .cornerRadius(20)
+                    .answerStyle()
+
                 }
                 
                 Spacer()
@@ -81,9 +132,8 @@ struct ContentView: View {
                     Text("Score: \(score)")
                     Spacer()
                     Text("Game Count: \(gameCount) / 10")
-                }
-                .font(.title3.bold())
-                
+                }.statusStyle()
+                                
                 Spacer()
             }.alert(content, isPresented: $showAlert) {
                 Button("OK") {
@@ -108,7 +158,6 @@ struct ContentView: View {
         let question = gameItem[index]
         
 //        if your moves array was ["Rock", "Paper", "Scissors"] your array of winning moves would be ["Paper", "Scissors", "Rock"].
-
         
         if brainTaskText == "win" {
             if question == "Rock" && answer == "Paper" {
