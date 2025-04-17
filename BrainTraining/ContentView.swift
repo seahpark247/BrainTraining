@@ -4,6 +4,7 @@
 //
 //  Created by Seah Park on 4/14/25.
 //
+// TODO: 코드 리팩토링 더 하기, 모듈화, 클래스, 이넘
 
 
 import SwiftUI
